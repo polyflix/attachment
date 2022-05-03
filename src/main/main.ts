@@ -47,7 +47,7 @@ async function bootstrap() {
     `v${API_VERSION}/docs`,
     app,
     yaml.load(openApiFile) as OpenAPIObject,
-    { customSiteTitle: "Polyflix TODOs API" }
+    { customSiteTitle: "Polyflix Attachments API" }
   );
 
   const port = config["server"]["port"] || 3000;

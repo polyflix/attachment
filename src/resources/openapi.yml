@@ -1,8 +1,8 @@
 openapi: "3.0.2"
 info:
-  title: TODO OpenAPI
+  title: Attachments OpenAPI
   version: "2.0.0"
-  description: Description of the HTTP endpoints of the Polyflix TODO service
+  description: Description of the HTTP endpoints of the Polyflix attachments service
 servers:
   - url: "http://{server}/v{version}"
     description: Local
@@ -19,145 +19,190 @@ servers:
       version:
         default: "2.0.0"
 tags:
-  - name: TODOs
+  - name: Attachments
 components:
   schemas:
-    TODO:
+    attachment:
       type: object
       allOf:
-        - $ref: "#/components/schemas/TODOBase"
+        - $ref: "#/components/schemas/attachmentBase"
         - properties:
             id:
               type: string
-              description: The id of the TODO
+            userId:
+              type: string
+              description: The id of the user who created this attachment.
+            url:
+              type: string
+              description: The public URL of the attachment. It should be a classical URL if the attachment is a external link, or a PSU if the attachment is a file.
+            status:
+              type: string
+              description: If the attachment is a file, it describes the status of the upload of the file.
+              enum:
+                - IN_PROGRESS
+                - COMPLETED
+            videos:
+              type: array
+              description: An array of linked videos ids.
+              items:
+                type: string
+            modules:
+              type: array
+              description: An array of linked modules ids.
+              items:
+                type: string
       required:
         - id
         - userId
         - url
         - status
-    TODOBase:
+        - type
+        - videos
+        - modules
+    attachmentBase:
       type: object
       properties:
-        name:
+        type:
           type: string
-          description: The name of the TODO
+          description: The type of the attachment, either a file to be uploaded or an external link.
+          enum:
+            - LOCAL
+            - EXTERNAL
+        title:
+          type: string
+          description: The name of the attachment, should be explicit to all users.
         description:
           type: string
-          description: The TODO description
-    paginatedTODOs:
+          description: The description of the attachment, if it needs to be clarified.
+    paginatedAttachments:
       type: object
       properties:
         data:
           type: array
-          description: An array of TODOs
+          description: An array of attachments
           items:
-            $ref: "#/components/schemas/TODO"
+            $ref: "#/components/schemas/attachment"
         totalCount:
           type: integer
-          description: The total number of TODO, ignoring pagination parameters
+          description: The total number of attachments, ignoring pagination parameters
   requestBodies:
-    editTODO:
-      description: The DTO of a new TODO
+    createAttachment:
+      description: The DTO of a new attachment. If this attachment contains a file, the request body MAY be empty.
       content:
         application/json:
           schema:
             oneOf:
               - allOf:
-                  - $ref: "#/components/schemas/TODOBase"
+                  - $ref: "#/components/schemas/attachmentBase"
                   - type: object
                     properties:
-                      newField:
+                      url:
                         type: string
-                        description: The newField of the TODO
+                        description: The public URL of the attachment (if it is an external URL)
+              - type: object
   responses:
-    TODOResponse:
-      description: A TODO
+    createdAttachment:
+      description: Either the attachment entity if the type is an external link, or a MinIO PSU
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/TODO"
-    TODOsResponse:
-      description: Returns a list of paginated TODOs _(for administration purposes)_.
+            oneOf:
+              - $ref: "#/components/schemas/attachment"
+              - type: object
+                properties:
+                  url:
+                    type: string
+                    description: The MinIO PSU to upload the file
+    attachmentResponse:
+      description: An attachment
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/paginatedTODOs"
+            $ref: "#/components/schemas/attachment"
+    attachmentsResponse:
+      description: Returns a list of paginated attachments (for administration purposes).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/paginatedAttachments"
     notFoundError:
-      description: The TODO was not found.
+      description: Either the attachment was not found, or the attachment status is still `IN_PROGRESS`.
   parameters:
     limit:
       name: limit
       in: query
-      description: The maximum number of TODOs to return
+      description: The maximum number of attachments to return
       required: false
       schema:
         type: number
     offset:
       name: offset
       in: query
-      description: The number of TODOs to skip
+      description: The number of attachments to skip
       required: false
       schema:
         type: number
     id:
       name: id
       in: path
-      description: The id of the TODO
+      description: The id of the attachment
       required: true
       schema:
         type: string
 paths:
-  /:
+  /attachments/:
     get:
       tags:
-        - TODOs
-      summary: Get a list of paginated TODOs
+        - Attachments
+      summary: Get a list of paginated attachments
       parameters:
         - $ref: "#/components/parameters/limit"
         - $ref: "#/components/parameters/offset"
       responses:
         "200":
-          $ref: "#/components/responses/TODOsResponse"
+          $ref: "#/components/responses/attachmentsResponse"
     post:
       tags:
-        - TODOs
-      summary: Creates a TODO
+        - Attachments
+      summary: Creates an attachment
       description: >
-        Creates a TODO. _Add optional description_.
+        Creates an attachment. If the type of the attachment is an external link, it returns the full attachment entity.
+        If the type of the attachment is a file, it creates the attachment entity in a `IN_PROGRESS` mode, and returns a MinIO PSU.
+        When the file will be uploaded by the user, MinIO will notify the service via a Kafka topic and the service will set the status to `COMPLETED`.
       requestBody:
-        $ref: "#/components/requestBodies/editTODO"
+        $ref: "#/components/requestBodies/createAttachment"
       responses:
         "201":
-          $ref: "#/components/responses/TODOResponse"
-  /{id}:
+          $ref: "#/components/responses/createdAttachment"
+  /attachments/{id}:
     get:
       tags:
-        - TODOs
-      summary: Get a TODO by its id
+        - Attachments
+      summary: Get an attachment by its id
       parameters:
         - $ref: "#/components/parameters/id"
       responses:
         "200":
-          $ref: "#/components/responses/TODOResponse"
+          $ref: "#/components/responses/attachmentResponse"
         "404":
           $ref: "#/components/responses/notFoundError"
     put:
       tags:
-        - TODOs
-      summary: Update a TODO by its id
+        - Attachments
+      summary: Update an attachment by its id
       parameters:
         - $ref: "#/components/parameters/id"
       requestBody:
-        $ref: "#/components/requestBodies/editTODO"
+        $ref: "#/components/requestBodies/createAttachment"
       responses:
         "200":
-          $ref: "#/components/responses/TODOResponse"
+          $ref: "#/components/responses/createdAttachment"
     delete:
       tags:
-        - TODOs
-      summary: Delete a TODO by its id
+        - Attachments
+      summary: Delete an attachment by its id
       parameters:
         - $ref: "#/components/parameters/id"
       responses:
         "204":
-          description: The TODO was deleted successfully
+          description: The attachment was deleted successfully
