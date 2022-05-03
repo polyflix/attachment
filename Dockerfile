@@ -21,4 +21,4 @@ RUN npm config set \
 USER node
 EXPOSE 5000
 HEALTHCHECK --interval=10s --start-period=5s CMD curl --fail http://localhost:5000/api/v1/health || exit 1
-ENTRYPOINT [ "node", "dist/main" ]
+ENTRYPOINT [ "node", "dist/main/main" ]

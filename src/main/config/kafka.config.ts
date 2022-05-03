@@ -7,7 +7,7 @@ export const microserviceConfig = (config): KafkaOptions => ({
   options: {
     client: {
       clientId: config["client"]["clientId"],
-      brokers: config["client"]["brokers"].join(",")
+      brokers: config["client"]["brokers"].split(",")
     },
     consumer: {
       groupId: config["consumer"]["groupId"],
