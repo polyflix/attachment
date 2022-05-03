@@ -17,3 +17,17 @@ include:
     file: '/jobs/nestjs/test.units.yml'
     ref: main
 
+deploy:kube:
+  extends: .kube-deploy
+  variables:
+    HELM_OPTIONS: "--set image.tag=$CI_COMMIT_BRANCH-$CI_COMMIT_SHORT_SHA"
+    HELM_RELEASE_NAME: "attachment"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      variables:
+        ENVIRONMENT: qa
+    - if: $CI_COMMIT_TAG
+      variables:
+        ENVIRONMENT: production
+        ENVIRONMENT_NS: default
+        HELM_OPTIONS: "--set image.tag=$CI_COMMIT_TAG"
