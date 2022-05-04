@@ -10,7 +10,7 @@ import {
 import { CreateTodoDto } from "../../application/dto/create-todo.dto";
 import { TodoService } from "../services/todo.service";
 
-@Controller("todos")
+@Controller()
 export class TodoController {
   constructor(private readonly todoService: TodoService) {}
 

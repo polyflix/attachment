@@ -1,0 +1,163 @@
+openapi: "3.0.2"
+info:
+  title: TODO OpenAPI
+  version: "2.0.0"
+  description: Description of the HTTP endpoints of the Polyflix TODO service
+servers:
+  - url: "http://{server}/v{version}"
+    description: Local
+    variables:
+      server:
+        default: localhost:5000
+      version:
+        default: "2.0.0"
+  - url: "https://{server}/v{version}"
+    description: QA
+    variables:
+      server:
+        default: qapolyflix.dopolytech.fr/api
+      version:
+        default: "2.0.0"
+tags:
+  - name: TODOs
+components:
+  schemas:
+    TODO:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/TODOBase"
+        - properties:
+            id:
+              type: string
+              description: The id of the TODO
+      required:
+        - id
+        - userId
+        - url
+        - status
+    TODOBase:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the TODO
+        description:
+          type: string
+          description: The TODO description
+    paginatedTODOs:
+      type: object
+      properties:
+        data:
+          type: array
+          description: An array of TODOs
+          items:
+            $ref: "#/components/schemas/TODO"
+        totalCount:
+          type: integer
+          description: The total number of TODO, ignoring pagination parameters
+  requestBodies:
+    editTODO:
+      description: The DTO of a new TODO
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - allOf:
+                  - $ref: "#/components/schemas/TODOBase"
+                  - type: object
+                    properties:
+                      newField:
+                        type: string
+                        description: The newField of the TODO
+  responses:
+    TODOResponse:
+      description: A TODO
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/TODO"
+    TODOsResponse:
+      description: Returns a list of paginated TODOs _(for administration purposes)_.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/paginatedTODOs"
+    notFoundError:
+      description: The TODO was not found.
+  parameters:
+    limit:
+      name: limit
+      in: query
+      description: The maximum number of TODOs to return
+      required: false
+      schema:
+        type: number
+    offset:
+      name: offset
+      in: query
+      description: The number of TODOs to skip
+      required: false
+      schema:
+        type: number
+    id:
+      name: id
+      in: path
+      description: The id of the TODO
+      required: true
+      schema:
+        type: string
+paths:
+  /:
+    get:
+      tags:
+        - TODOs
+      summary: Get a list of paginated TODOs
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+      responses:
+        "200":
+          $ref: "#/components/responses/TODOsResponse"
+    post:
+      tags:
+        - TODOs
+      summary: Creates a TODO
+      description: >
+        Creates a TODO. _Add optional description_.
+      requestBody:
+        $ref: "#/components/requestBodies/editTODO"
+      responses:
+        "201":
+          $ref: "#/components/responses/TODOResponse"
+  /{id}:
+    get:
+      tags:
+        - TODOs
+      summary: Get a TODO by its id
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          $ref: "#/components/responses/TODOResponse"
+        "404":
+          $ref: "#/components/responses/notFoundError"
+    put:
+      tags:
+        - TODOs
+      summary: Update a TODO by its id
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        $ref: "#/components/requestBodies/editTODO"
+      responses:
+        "200":
+          $ref: "#/components/responses/TODOResponse"
+    delete:
+      tags:
+        - TODOs
+      summary: Delete a TODO by its id
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: The TODO was deleted successfully
