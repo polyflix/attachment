@@ -10,7 +10,11 @@ npm run start:dev
 ```
 
 You should have the appropriate configuration and services running on your machine
-in order to ensure the application is launching properly.
+in order to ensure the application is launching properly (cf. the [bootstrap repository](https://gitlab.polytech.umontpellier.fr/polyflix-do/bootstrap)).
+
+## OpenAPI specification
+
+You should update the [OpenAPI yaml file](./src/resources/openapi.yml) in order to provide documentation about the HTTP endpoints of your service. A [Swagger UI](https://swagger.io/tools/swagger-ui/) page that describes your API is available at `/{version}/docs`.
 
 ## Telemetry
 

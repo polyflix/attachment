@@ -1,5 +1,6 @@
 import { ValidationPipe, VersioningType } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import { SwaggerModule, OpenAPIObject } from "@nestjs/swagger";
 import { readFileSync } from "fs";
 import * as yaml from "js-yaml";
 import { join } from "path";
@@ -36,6 +37,18 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
   app.enableShutdownHooks();
+
+  const openApiFile = readFileSync(
+    join(__dirname, "..", "resources", "openapi.yml"),
+    "utf-8"
+  );
+
+  SwaggerModule.setup(
+    `v${API_VERSION}/docs`,
+    app,
+    yaml.load(openApiFile) as OpenAPIObject,
+    { customSiteTitle: "Polyflix TODOs API" }
+  );
 
   const port = config["server"]["port"] || 3000;
 
