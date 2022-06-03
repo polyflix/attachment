@@ -1,5 +1,5 @@
 server:
-  port: 5000
+  port: 5006
 
 telemetry:
   port: 4317
@@ -8,7 +8,11 @@ telemetry:
 kafka:
   client:
     clientId: todo-backend
-    brokers: localhost:9092
+    brokers: localhost:29092
   consumer:
     groupId: todo-consumer
     allowAutoTopicCreation: true
+
+database:
+  mongo:
+    uri: "mongodb://root:root@localhost/attachment"
