@@ -51,6 +51,7 @@ export class AttachmentRepository {
   }
 
   async save(body: Attachment): Promise<Attachment> {
+    this.logger.log(`Saving attachment ${body.id}.`);
     const attachment = new this.attachmentModel(
       this.attachmentEntityMapper.apiToEntity(body)
     );
@@ -58,6 +59,7 @@ export class AttachmentRepository {
   }
 
   async remove(attachment: Attachment): Promise<Attachment> {
+    this.logger.log(`Deleting attachment ${attachment.id}.`);
     const model = new this.attachmentModel(
       this.attachmentEntityMapper.apiToEntity(attachment)
     );

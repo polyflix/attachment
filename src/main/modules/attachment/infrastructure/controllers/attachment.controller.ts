@@ -18,9 +18,9 @@ import { AttachmentService } from "../services/attachment.service";
 
 @Controller("attachments")
 export class AttachmentController {
-  constructor(private readonly attachmentService: AttachmentService) {}
-
   private readonly logger = new Logger(AttachmentController.name);
+
+  constructor(private readonly attachmentService: AttachmentService) {}
 
   @Get()
   @Roles(Role.Admin, Role.Contributor, Role.Member)
@@ -53,10 +53,9 @@ export class AttachmentController {
   ) {
     const attachment = await this.attachmentService.findOne(id);
     if (!roles.includes(Role.Admin) && attachment.userId !== userId) {
-      this.logger.warn(
-        `Unauthorized user (${userId}) tried to edit an attachment.`
-      );
-      throw new ForbiddenException();
+      const errorMessage = `Unauthorized user (${userId}) tried to edit an attachment.`;
+      this.logger.warn(errorMessage);
+      throw new ForbiddenException(errorMessage);
     }
     return this.attachmentService.update(id, updateDto);
   }
@@ -70,10 +69,9 @@ export class AttachmentController {
   ) {
     const attachment = await this.attachmentService.findOne(id);
     if (!roles.includes(Role.Admin) && attachment.userId !== userId) {
-      this.logger.warn(
-        `Unauthorized user (${userId}) tried to delete an attachment.`
-      );
-      throw new ForbiddenException();
+      const errorMessage = `Unauthorized user (${userId}) tried to delete an attachment.`;
+      this.logger.warn(errorMessage);
+      throw new ForbiddenException(errorMessage);
     }
     return this.attachmentService.delete(id);
   }

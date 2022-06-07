@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException
 } from "@nestjs/common";
 import { Result } from "@swan-io/boxed";
@@ -21,13 +22,17 @@ import { AttachmentParams } from "../filters/attachment.params";
 
 @Injectable()
 export class AttachmentService {
+  private readonly logger = new Logger(AttachmentService.name);
+
   constructor(private readonly attachmentRepository: AttachmentRepository) {}
 
   private async getAttachment(id: string): Promise<Attachment> {
     return (await this.attachmentRepository.findOne(id)).match({
       Some: (attachment) => attachment,
       None: () => {
-        throw new NotFoundException(`Attachment not found with id=${id}`);
+        const errorMessage = `Attachment not found with id=${id}`;
+        this.logger.warn(errorMessage);
+        throw new NotFoundException(errorMessage);
       }
     });
   }
@@ -51,8 +56,10 @@ export class AttachmentService {
       Error: (error: Error) => {
         switch (error.constructor) {
           case AttachmentMissingLinkError:
+            this.logger.warn(error.message);
             throw new BadRequestException(error.message);
           default:
+            this.logger.error(error.message);
             throw new InternalServerErrorException(error.message);
         }
       }
@@ -67,10 +74,12 @@ export class AttachmentService {
     props: UpdateAttachmentDto
   ): Promise<AttachmentResponse> {
     const attachment = await this.getAttachment(id);
-    if (props.url && attachment.type === AttachmentType.LOCAL)
-      throw new BadRequestException(
-        "The url cannot be updated if the attachment is a local file."
-      );
+    if (props.url && attachment.type === AttachmentType.LOCAL) {
+      const errorMessage =
+        "The url cannot be updated if the attachment is a local file.";
+      this.logger.warn(errorMessage);
+      throw new BadRequestException(errorMessage);
+    }
     return AttachmentResponse.of(
       await this.attachmentRepository.save({ ...attachment, ...props })
     );
