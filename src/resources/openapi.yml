@@ -66,7 +66,7 @@ components:
           type: string
           description: The type of the attachment, either a file to be uploaded or an external link.
           enum:
-            - LOCAL
+            - INTERNAL
             - EXTERNAL
         title:
           type: string

@@ -7,7 +7,7 @@ export enum AttachmentStatus {
 }
 
 export enum AttachmentType {
-  LOCAL = "LOCAL",
+  INTERNAL = "INTERNAL",
   EXTERNAL = "EXTERNAL"
 }
 
@@ -45,7 +45,7 @@ export class Attachment {
       props.id ?? uuid(),
       props.userId,
       props.status ??
-        (props.type === AttachmentType.LOCAL
+        (props.type === AttachmentType.INTERNAL
           ? AttachmentStatus.IN_PROGRESS
           : AttachmentStatus.COMPLETED),
       props.type,

@@ -65,7 +65,7 @@ export class AttachmentService {
       }
     });
     return AttachmentResponse.of(
-      await this.attachmentRepository.save(attachment)
+      await this.attachmentRepository.create(attachment)
     );
   }
 
@@ -74,14 +74,14 @@ export class AttachmentService {
     props: UpdateAttachmentDto
   ): Promise<AttachmentResponse> {
     const attachment = await this.getAttachment(id);
-    if (props.url && attachment.type === AttachmentType.LOCAL) {
+    if (props.url && attachment.type === AttachmentType.INTERNAL) {
       const errorMessage =
-        "The url cannot be updated if the attachment is a local file.";
+        "The url cannot be updated if the attachment is an internal file.";
       this.logger.warn(errorMessage);
       throw new BadRequestException(errorMessage);
     }
     return AttachmentResponse.of(
-      await this.attachmentRepository.save({ ...attachment, ...props })
+      await this.attachmentRepository.update({ ...attachment, ...props })
     );
   }
 

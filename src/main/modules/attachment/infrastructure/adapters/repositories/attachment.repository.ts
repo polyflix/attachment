@@ -41,6 +41,7 @@ export class AttachmentRepository {
     const totalCount = await this.attachmentModel.countDocuments(query).exec();
     const attachments = await this.attachmentModel
       .find(query)
+      .sort({ updatedAt: -1 })
       .limit(params.limit || 20)
       .skip(params.offset || 0)
       .exec();
@@ -50,12 +51,20 @@ export class AttachmentRepository {
     };
   }
 
-  async save(body: Attachment): Promise<Attachment> {
-    this.logger.log(`Saving attachment ${body.id}.`);
+  async create(body: Attachment): Promise<Attachment> {
+    this.logger.log(`Creating attachment ${body.id}.`);
     const attachment = new this.attachmentModel(
       this.attachmentEntityMapper.apiToEntity(body)
     );
     return this.attachmentEntityMapper.entityToApi(await attachment.save());
+  }
+
+  async update(body: Attachment): Promise<Attachment> {
+    this.logger.log(`Updating attachment ${body.id}.`);
+    const attachment = await this.attachmentModel
+      .findByIdAndUpdate(body.id, body, { new: true })
+      .exec();
+    return this.attachmentEntityMapper.entityToApi(attachment);
   }
 
   async remove(attachment: Attachment): Promise<Attachment> {
