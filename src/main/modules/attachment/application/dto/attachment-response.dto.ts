@@ -14,6 +14,7 @@ export class AttachmentResponse {
     public videos: string[],
     public modules: string[],
     public url: string,
+    public extension?: string,
     public title?: string,
     public description?: string
   ) {}
@@ -27,6 +28,7 @@ export class AttachmentResponse {
       attachment.videos || [],
       attachment.modules || [],
       attachment.url,
+      attachment.extension,
       attachment.title,
       attachment.description
     );

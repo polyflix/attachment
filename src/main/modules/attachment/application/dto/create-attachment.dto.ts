@@ -17,4 +17,8 @@ export class CreateAttachmentDto {
   @IsString()
   @IsOptional()
   url?: string;
+
+  @IsString()
+  @IsOptional()
+  extension?: string;
 }

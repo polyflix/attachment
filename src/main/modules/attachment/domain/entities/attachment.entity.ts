@@ -1,4 +1,5 @@
 import { v4 as uuid } from "uuid";
+import { AttachmentMissingExtensionError } from "../errors/attachment-missing-extension";
 import { AttachmentMissingLinkError } from "../errors/attachment-missing-link.error";
 
 export enum AttachmentStatus {
@@ -19,6 +20,7 @@ export interface CreateAttachmentProps {
   videos?: string[];
   modules?: string[];
   url?: string;
+  extension?: string;
   title?: string;
   description?: string;
 }
@@ -34,13 +36,16 @@ export class Attachment {
     /** An array of modules ids containing this attachment */
     public modules?: string[],
     public url?: string,
+    public extension?: string,
     public title?: string,
     public description?: string
   ) {}
 
   static create(props: CreateAttachmentProps): Attachment {
-    if (props.type === AttachmentType.EXTERNAL && !props.url)
+    if (!props.id && props.type === AttachmentType.EXTERNAL && !props.url)
       throw new AttachmentMissingLinkError();
+    if (!props.id && props.type === AttachmentType.INTERNAL && !props.extension)
+      throw new AttachmentMissingExtensionError();
     return new Attachment(
       props.id ?? uuid(),
       props.userId,
@@ -52,17 +57,11 @@ export class Attachment {
       props.videos,
       props.modules,
       props.url,
+      props.extension,
       props.title,
       props.description
     );
   }
-
-  /**
-   * Return true if the attachment is an external link, or if the attachment file is uploaded
-   */
-  // public get isAvailable(): boolean {
-  //   return this.status == AttachmentStatus.COMPLETED;
-  // }
 }
 
 export interface PaginatedAttachments {

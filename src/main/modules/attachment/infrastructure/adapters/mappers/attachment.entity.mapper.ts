@@ -26,6 +26,7 @@ export class AttachmentEntityMapper extends AbstractMapper<
       videos: entity.videos,
       modules: entity.modules,
       url: entity.url,
+      extension: entity.extension,
       title: entity.title,
       description: entity.description
     });

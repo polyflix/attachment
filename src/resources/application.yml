@@ -16,3 +16,10 @@ kafka:
 database:
   mongo:
     uri: "mongodb://root:root@localhost/attachment"
+
+minio:
+  port: 9000
+  host: localhost
+  ssl: false
+  accessKey: minio
+  secretKey: minio123

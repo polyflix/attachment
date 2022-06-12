@@ -1,6 +1,11 @@
-import { IsOptional, IsString } from "class-validator";
+import { IsEnum, IsOptional, IsString } from "class-validator";
+import { AttachmentType } from "../../domain/entities/attachment.entity";
 
 export class UpdateAttachmentDto {
+  @IsEnum(AttachmentType)
+  @IsOptional()
+  type: AttachmentType;
+
   @IsString()
   @IsOptional()
   title?: string;
@@ -12,6 +17,10 @@ export class UpdateAttachmentDto {
   @IsString()
   @IsOptional()
   url?: string;
+
+  @IsString()
+  @IsOptional()
+  extension?: string;
 
   @IsString({ each: true })
   @IsOptional()

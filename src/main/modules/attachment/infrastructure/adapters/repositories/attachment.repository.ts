@@ -35,7 +35,7 @@ export class AttachmentRepository {
 
   async findAll(params: AttachmentParams): Promise<PaginatedAttachments> {
     this.logger.log(
-      `Retrieving attachments list with limit of ${params.limit} and offset of ${params.offset}.`
+      `Retrieving attachments list of user ${params.userId} with limit of ${params.limit} and offset of ${params.offset}.`
     );
     const query = { ...(params.userId && { userId: params.userId }) };
     const totalCount = await this.attachmentModel.countDocuments(query).exec();

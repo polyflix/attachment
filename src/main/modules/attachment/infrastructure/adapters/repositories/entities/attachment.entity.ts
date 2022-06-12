@@ -25,6 +25,9 @@ export class AttachmentEntity {
   modules?: string[];
 
   @Prop()
+  extension?: string;
+
+  @Prop()
   url?: string;
 
   @Prop()

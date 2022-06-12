@@ -4,6 +4,7 @@ import { OpenTelemetryModule } from "nestjs-otel";
 import { AppService } from "./app.service";
 import { HealthModule } from "./core/health/health.module";
 import { KafkaModule } from "./core/kafka/kafka.module";
+import { MinioModule } from "./core/minio/minio.module";
 import { AttachmentModule } from "./modules/attachment/infrastructure/attachment.module";
 
 interface AppModuleOptions {
@@ -23,7 +24,8 @@ export class AppModule {
         ConfigModule.forRoot({
           isGlobal: true,
           load: [() => options?.config || {}]
-        })
+        }),
+        MinioModule
       ]
     };
   }

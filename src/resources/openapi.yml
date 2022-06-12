@@ -68,6 +68,9 @@ components:
           enum:
             - INTERNAL
             - EXTERNAL
+        extension:
+          type: string
+          description: The file type / extension of the attachment, if it is a file to be uploaded.
         title:
           type: string
           description: The name of the attachment, should be explicit to all users.
@@ -87,7 +90,7 @@ components:
           description: The total number of attachments, ignoring pagination parameters
   requestBodies:
     createAttachment:
-      description: The DTO of a new attachment. If this attachment contains a file, the request body MAY be empty.
+      description: The DTO of a new attachment.
       content:
         application/json:
           schema:
@@ -186,10 +189,10 @@ paths:
           $ref: "#/components/responses/attachmentResponse"
         "404":
           $ref: "#/components/responses/notFoundError"
-    put:
+    patch:
       tags:
         - Attachments
-      summary: Update an attachment by its id
+      summary: Update an attachment by its id. If the attachment is an internal file and the file should be updated too, the `extension` field must be set.
       parameters:
         - $ref: "#/components/parameters/id"
       requestBody:

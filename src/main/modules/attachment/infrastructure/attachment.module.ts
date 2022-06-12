@@ -11,6 +11,7 @@ import {
 } from "./adapters/repositories/entities/attachment.entity";
 import { AttachmentController } from "./controllers/attachment.controller";
 import { AttachmentService } from "./services/attachment.service";
+import { MinioService } from "./services/minio.service";
 
 @Module({
   controllers: [AttachmentController],
@@ -30,6 +31,7 @@ import { AttachmentService } from "./services/attachment.service";
     AttachmentRepository,
     AttachmentService,
     AttachmentEntityMapper,
+    MinioService,
     { provide: APP_GUARD, useClass: RolesGuard }
   ]
 })
