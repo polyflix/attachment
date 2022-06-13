@@ -1,6 +1,7 @@
 import { ValidationPipe, VersioningType } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { SwaggerModule, OpenAPIObject } from "@nestjs/swagger";
+import { kafkaConfig } from "@polyflix/x-utils";
 import { readFileSync } from "fs";
 import * as yaml from "js-yaml";
 import { join } from "path";
@@ -33,6 +34,7 @@ async function bootstrap() {
     defaultVersion: API_VERSION
   });
 
+  app.connectMicroservice(kafkaConfig(config["kafka"]));
   await app.startAllMicroservices();
 
   app.useGlobalPipes(new ValidationPipe());

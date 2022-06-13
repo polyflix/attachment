@@ -98,7 +98,7 @@ export class AttachmentService {
 
   async update(
     id: string,
-    props: UpdateAttachmentDto
+    props: UpdateAttachmentDto & { status?: AttachmentStatus }
   ): Promise<AttachmentResponse> {
     const attachment = await this.getAttachment(id);
     // If old type is EXTERNAL, and new type is INTERNAL

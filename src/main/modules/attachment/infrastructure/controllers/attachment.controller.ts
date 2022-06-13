@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -10,15 +11,29 @@ import {
   Post,
   Query
 } from "@nestjs/common";
-import { MeId, MeRoles, Role, Roles } from "@polyflix/x-utils";
+import { EventPattern, Payload } from "@nestjs/microservices";
+import {
+  MeId,
+  MeRoles,
+  MinIOMessageValue,
+  Role,
+  Roles
+} from "@polyflix/x-utils";
+import { S3_ACTION } from "src/main/core/constants/minio.constants";
+import { getMinioEventType } from "src/main/core/minio/minio.utils";
 import { CreateAttachmentDto } from "../../application/dto/create-attachment.dto";
 import { UpdateAttachmentDto } from "../../application/dto/update-attachment.dto";
+import {
+  AttachmentStatus,
+  AttachmentType
+} from "../../domain/entities/attachment.entity";
 import { AttachmentParams } from "../filters/attachment.params";
 import { AttachmentService } from "../services/attachment.service";
 
 @Controller("attachments")
 export class AttachmentController {
   private readonly logger = new Logger(AttachmentController.name);
+  private static KAFKA_MINIO_TOPIC = "polyflix.minio.attachment";
 
   constructor(private readonly attachmentService: AttachmentService) {}
 
@@ -74,5 +89,27 @@ export class AttachmentController {
       throw new ForbiddenException(errorMessage);
     }
     return this.attachmentService.delete(id);
+  }
+
+  @EventPattern(AttachmentController.KAFKA_MINIO_TOPIC)
+  async subscribeToMinio(@Payload("value") message: MinIOMessageValue) {
+    this.logger.log(
+      `Event received on ${AttachmentController.KAFKA_MINIO_TOPIC} - ${message.EventName}`
+    );
+    const type = getMinioEventType(message);
+    if (type === S3_ACTION.CREATED) {
+      let attachmentId = "";
+      try {
+        const splittedFilename = message.Key.split("/")[1].split(".");
+        attachmentId = splittedFilename[splittedFilename.length - 2];
+      } catch (e) {
+        throw new BadRequestException(`Unable to parse the filename : ${e}`);
+      }
+      this.logger.log(`Setting attachment ${attachmentId} to COMPLETED.`);
+      await this.attachmentService.update(attachmentId, {
+        type: AttachmentType.INTERNAL,
+        status: AttachmentStatus.COMPLETED
+      });
+    }
   }
 }

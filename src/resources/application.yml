@@ -6,11 +6,16 @@ telemetry:
   host: localhost
 
 kafka:
+  topics:
+    attachment: polyflix.attachment
+    video: polyflix.video
+    module: polyflix.catalog.module
+    minio: polyflix.minio.attachment
   client:
-    clientId: todo-backend
+    clientId: attachment-client
     brokers: localhost:29092
   consumer:
-    groupId: todo-consumer
+    groupId: attachment-consumer
     allowAutoTopicCreation: true
 
 database:
