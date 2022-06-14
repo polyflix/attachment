@@ -58,9 +58,18 @@ export class AttachmentController {
   }
 
   @Get()
-  @Roles(Role.Admin, Role.Contributor, Role.Member)
+  @Roles(Role.Admin, Role.Contributor)
   find(@Query() params: AttachmentParams) {
     return this.attachmentService.find(params);
+  }
+
+  @Get("/video/:videoId")
+  @Roles(Role.Admin, Role.Contributor, Role.Member)
+  findByVideo(
+    @Param("videoId") videoId: string,
+    @Query() params: AttachmentParams
+  ) {
+    return this.attachmentService.find({ ...params, videos: [videoId] });
   }
 
   @Get(":id")
