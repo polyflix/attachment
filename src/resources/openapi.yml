@@ -8,7 +8,7 @@ servers:
     description: Local
     variables:
       server:
-        default: localhost:5000
+        default: localhost:5006
       version:
         default: "2.0.0"
   - url: "https://{server}/v{version}"
@@ -88,6 +88,12 @@ components:
         totalCount:
           type: integer
           description: The total number of attachments, ignoring pagination parameters
+    roles:
+      type: string
+      enum:
+        - ADMINISTRATOR
+        - CONTRIBUTOR
+        - MEMBER
   requestBodies:
     createAttachment:
       description: The DTO of a new attachment.
@@ -145,11 +151,54 @@ components:
       required: false
       schema:
         type: number
+    userId:
+      name: userId
+      in: query
+      description: The id of the author of the attachments
+      required: false
+      schema:
+        type: string
+    videos:
+      name: videos
+      in: query
+      description: An array of the linked videos of the attachments
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+      explode: true
+    modules:
+      name: modules
+      in: query
+      description: An array of the linked modules of the attachments
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+      explode: true
     id:
       name: id
       in: path
       description: The id of the attachment
       required: true
+      schema:
+        type: string
+    x-roles:
+      name: x-user-roles
+      in: header
+      description: An array of the roles of the connected user
+      required: false
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/roles"
+    x-userId:
+      name: x-user-id
+      in: header
+      description: The id of the connected user
+      required: false
       schema:
         type: string
 paths:
@@ -161,6 +210,11 @@ paths:
       parameters:
         - $ref: "#/components/parameters/limit"
         - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/userId"
+        - $ref: "#/components/parameters/videos"
+        - $ref: "#/components/parameters/modules"
+        - $ref: "#/components/parameters/x-roles"
+        - $ref: "#/components/parameters/x-userId"
       responses:
         "200":
           $ref: "#/components/responses/attachmentsResponse"
@@ -168,6 +222,9 @@ paths:
       tags:
         - Attachments
       summary: Creates an attachment
+      parameters:
+        - $ref: "#/components/parameters/x-roles"
+        - $ref: "#/components/parameters/x-userId"
       description: >
         Creates an attachment. If the type of the attachment is an external link, it returns the full attachment entity.
         If the type of the attachment is a file, it creates the attachment entity in a `IN_PROGRESS` mode, and returns a MinIO PSU.
@@ -184,6 +241,8 @@ paths:
       summary: Get an attachment by its id
       parameters:
         - $ref: "#/components/parameters/id"
+        - $ref: "#/components/parameters/x-roles"
+        - $ref: "#/components/parameters/x-userId"
       responses:
         "200":
           $ref: "#/components/responses/attachmentResponse"
@@ -195,6 +254,8 @@ paths:
       summary: Update an attachment by its id. If the attachment is an internal file and the file should be updated too, the `extension` field must be set.
       parameters:
         - $ref: "#/components/parameters/id"
+        - $ref: "#/components/parameters/x-roles"
+        - $ref: "#/components/parameters/x-userId"
       requestBody:
         $ref: "#/components/requestBodies/createAttachment"
       responses:
@@ -206,6 +267,8 @@ paths:
       summary: Delete an attachment by its id
       parameters:
         - $ref: "#/components/parameters/id"
+        - $ref: "#/components/parameters/x-roles"
+        - $ref: "#/components/parameters/x-userId"
       responses:
         "204":
           description: The attachment was deleted successfully

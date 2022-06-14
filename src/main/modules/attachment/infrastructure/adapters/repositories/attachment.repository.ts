@@ -35,9 +35,13 @@ export class AttachmentRepository {
 
   async findAll(params: AttachmentParams): Promise<PaginatedAttachments> {
     this.logger.log(
-      `Retrieving attachments list of user ${params.userId} with limit of ${params.limit} and offset of ${params.offset}.`
+      `Retrieving attachments list of user ${params.userId} with limit of ${params.limit} and offset of ${params.offset} (videos : ${params.videos}, modules : ${params.modules}).`
     );
-    const query = { ...(params.userId && { userId: params.userId }) };
+    const query = {
+      ...(params.userId && { userId: params.userId }),
+      ...(params.videos && { videos: { $in: params.videos } }),
+      ...(params.modules && { modules: { $in: params.modules } })
+    };
     const totalCount = await this.attachmentModel.countDocuments(query).exec();
     const attachments = await this.attachmentModel
       .find(query)

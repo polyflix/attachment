@@ -5,6 +5,7 @@ import {
   Logger,
   NotFoundException
 } from "@nestjs/common";
+import { TriggerType } from "@polyflix/x-utils";
 import { Result } from "@swan-io/boxed";
 import {
   AttachmentResponse,
@@ -15,7 +16,8 @@ import {
   Attachment,
   AttachmentStatus,
   AttachmentType,
-  CreateAttachmentProps
+  CreateAttachmentProps,
+  ElementType
 } from "../../domain/entities/attachment.entity";
 import { AttachmentMissingExtensionError } from "../../domain/errors/attachment-missing-extension";
 import { AttachmentMissingLinkError } from "../../domain/errors/attachment-missing-link.error";
@@ -155,6 +157,37 @@ export class AttachmentService {
     }
     return AttachmentResponse.of(
       await this.attachmentRepository.remove(attachment)
+    );
+  }
+
+  /**
+   * Either adds or remove an element linked to an attachment
+   * @param attachment The attachment to update
+   * @param elementType The type of the element (video or module)
+   * @param triggerType The type of the action (add or remove)
+   * @param elementId The id of the element to add or delete in the attachment entity
+   * @returns The updated attachment
+   */
+  async handleElementUpdate(
+    attachment: Attachment,
+    elementType: ElementType,
+    triggerType: TriggerType,
+    elementId: string
+  ): Promise<AttachmentResponse> {
+    let newArray: string[] = [];
+    switch (triggerType) {
+      case TriggerType.CREATE:
+        newArray = [...attachment[elementType], elementId];
+        break;
+      case TriggerType.DELETE:
+        newArray = attachment[elementType].filter((e) => e !== elementId);
+        break;
+    }
+    return AttachmentResponse.of(
+      await this.attachmentRepository.update({
+        ...attachment,
+        [elementType]: newArray
+      })
     );
   }
 }

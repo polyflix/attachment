@@ -37,8 +37,8 @@ export class AttachmentResponse {
 
 export class PaginatedAttachmentsResponse {
   private constructor(
-    protected items: AttachmentResponse[],
-    protected totalCount: number
+    public items: AttachmentResponse[],
+    public totalCount: number
   ) {}
 
   public static of(

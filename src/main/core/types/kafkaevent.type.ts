@@ -1,10 +1,10 @@
+import { TriggerType } from "@polyflix/x-utils";
 import { exposureMetadataKey } from "../decorators/expose.decorator";
 
-export enum TriggerType {
-  CREATE = "CREATE",
-  DELETE = "DELETE",
-  UPDATE = "UPDATE"
-}
+export type PolyflixKafkaTypedValue<T> = {
+  trigger: TriggerType;
+  payload: T;
+};
 
 export class KafkaEventBuilder<T> {
   /**

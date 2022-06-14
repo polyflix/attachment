@@ -21,12 +21,4 @@ export class UpdateAttachmentDto {
   @IsString()
   @IsOptional()
   extension?: string;
-
-  @IsString({ each: true })
-  @IsOptional()
-  videos?: string[];
-
-  @IsString({ each: true })
-  @IsOptional()
-  modules?: string[];
 }

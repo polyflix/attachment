@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsInt, IsOptional, IsUUID, Min } from "class-validator";
+import { IsInt, IsOptional, IsString, IsUUID, Min } from "class-validator";
 
 export class AttachmentParams {
   @IsInt()
@@ -17,4 +17,12 @@ export class AttachmentParams {
   @IsUUID(4)
   @IsOptional()
   userId?: string;
+
+  @IsString({ each: true })
+  @IsOptional()
+  videos?: string[];
+
+  @IsString({ each: true })
+  @IsOptional()
+  modules?: string[];
 }

@@ -12,6 +12,11 @@ export enum AttachmentType {
   EXTERNAL = "EXTERNAL"
 }
 
+export enum ElementType {
+  VIDEOS = "videos",
+  MODULES = "modules"
+}
+
 export interface CreateAttachmentProps {
   id?: string;
   userId: string;

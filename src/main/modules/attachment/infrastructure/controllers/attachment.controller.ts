@@ -23,15 +23,19 @@ import {
   Roles,
   TriggerType
 } from "@polyflix/x-utils";
+import { difference } from "lodash";
 import { S3_ACTION } from "src/main/core/constants/minio.constants";
 import { getMinioEventType } from "src/main/core/minio/minio.utils";
+import { PolyflixKafkaTypedValue } from "src/main/core/types/kafkaevent.type";
 import { CreateAttachmentDto } from "../../application/dto/create-attachment.dto";
 import { UpdateAttachmentDto } from "../../application/dto/update-attachment.dto";
 import {
   Attachment,
   AttachmentStatus,
-  AttachmentType
+  AttachmentType,
+  ElementType
 } from "../../domain/entities/attachment.entity";
+import { Element } from "../../domain/entities/element.entity";
 import { AttachmentParams } from "../filters/attachment.params";
 import { AttachmentService } from "../services/attachment.service";
 
@@ -39,6 +43,8 @@ import { AttachmentService } from "../services/attachment.service";
 export class AttachmentController {
   private readonly logger = new Logger(AttachmentController.name);
   private static KAFKA_MINIO_TOPIC = "polyflix.minio.attachment";
+  private static KAFKA_VIDEO_TOPIC = "polyflix.video";
+  private static KAFKA_MODULE_TOPIC = "polyflix.catalog.module";
   private readonly KAFKA_ATTACHMENT_TOPIC: string;
 
   constructor(
@@ -140,6 +146,109 @@ export class AttachmentController {
     }
   }
 
+  /**
+   * Receive a message from the video Kafka topic
+   * @param message The video event
+   */
+  @EventPattern(AttachmentController.KAFKA_VIDEO_TOPIC)
+  async subscribeToVideo(
+    @Payload("value") message: PolyflixKafkaTypedValue<Element>
+  ) {
+    this.logger.log(
+      `Recieve message from topic: polyflix.legacy.video - trigger: ${message.trigger}`
+    );
+    this.handleElementUpdate(ElementType.VIDEOS, message);
+  }
+
+  /**
+   * Receive a message from the module Kafka topic
+   * @param message The module event
+   */
+  @EventPattern(AttachmentController.KAFKA_MODULE_TOPIC)
+  async subscribeToModule(
+    @Payload("value") message: PolyflixKafkaTypedValue<Element>
+  ) {
+    this.handleElementUpdate(ElementType.MODULES, message);
+  }
+
+  private async handleElementUpdate(
+    elementType: ElementType,
+    message: PolyflixKafkaTypedValue<Element>
+  ) {
+    switch (message.trigger) {
+      case TriggerType.CREATE:
+        /* If an element is created and contains attachments,
+        we add the element in each attachment */
+        for (const id of message.payload.attachments) {
+          const attachment = await this.attachmentService.findOne(id);
+          await this.attachmentService.handleElementUpdate(
+            attachment,
+            elementType,
+            message.trigger,
+            message.payload.id
+          );
+        }
+        break;
+      case TriggerType.UPDATE:
+        /* If an element is updated, we observe the difference between old attachments elements and the updated one.
+        Then, we remove / add the elements for the needed attachments. */
+        const oldAttachments = (
+          await this.attachmentService.find({
+            [elementType]: [message.payload.id]
+          })
+        ).items.map((attachment) => attachment.id);
+
+        const elementsToAdd = difference(
+          message.payload.attachments,
+          oldAttachments
+        );
+        for (const id of elementsToAdd) {
+          const attachment = await this.attachmentService.findOne(id);
+          await this.attachmentService.handleElementUpdate(
+            attachment,
+            elementType,
+            TriggerType.CREATE,
+            message.payload.id
+          );
+        }
+        const elementsToDelete = difference(
+          oldAttachments,
+          message.payload.attachments
+        );
+        for (const id of elementsToDelete) {
+          const attachment = await this.attachmentService.findOne(id);
+          await this.attachmentService.handleElementUpdate(
+            attachment,
+            elementType,
+            TriggerType.DELETE,
+            message.payload.id
+          );
+        }
+        break;
+      case TriggerType.DELETE:
+        /* If an element is deleted, we look for each attachment that contains this element,
+        and we remove this element from each attachment. */
+        for (const attachment of (
+          await this.attachmentService.find({
+            [elementType]: [message.payload.id]
+          })
+        ).items) {
+          await this.attachmentService.handleElementUpdate(
+            attachment,
+            elementType,
+            TriggerType.DELETE,
+            message.payload.id
+          );
+        }
+        break;
+    }
+  }
+
+  /**
+   * Sends an attachment in a Kafka topic
+   * @param type The type of the event
+   * @param payload The attachment
+   */
   publishAttachment(type: TriggerType, payload: Attachment) {
     for (const topic of [this.KAFKA_ATTACHMENT_TOPIC]) {
       this.logger.log(
