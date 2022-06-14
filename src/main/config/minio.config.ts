@@ -8,7 +8,7 @@ export const minioConfig = (
     endPoint: configService.get<string>("minio.host") ?? "localhost",
     port: +configService.get<number>("minio.port") ?? 9000,
     useSSL: configService.get<string>("minio.ssl") === "true",
-    accessKey: configService.get<string>("minio.accessKey"),
-    secretKey: configService.get<string>("minio.secretKey")
+    accessKey: configService.get<string>("minio.access"),
+    secretKey: configService.get<string>("minio.secret")
   }
 });

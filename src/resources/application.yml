@@ -26,5 +26,5 @@ minio:
   port: 9000
   host: localhost
   ssl: false
-  accessKey: minio
-  secretKey: minio123
+  access: minio
+  secret: minio123
