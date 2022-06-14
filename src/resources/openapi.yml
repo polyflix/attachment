@@ -77,6 +77,9 @@ components:
         description:
           type: string
           description: The description of the attachment, if it needs to be clarified.
+      required:
+        - type
+        - title
     paginatedAttachments:
       type: object
       properties:
@@ -206,7 +209,7 @@ paths:
     get:
       tags:
         - Attachments
-      summary: Get a list of paginated attachments
+      summary: Get a list of paginated attachments, only for contributors and administrators
       parameters:
         - $ref: "#/components/parameters/limit"
         - $ref: "#/components/parameters/offset"
@@ -234,6 +237,23 @@ paths:
       responses:
         "201":
           $ref: "#/components/responses/createdAttachment"
+  /attachments/video/{videoId}:
+    get:
+      tags:
+        - Attachments
+      summary: Get a list of attachments linked to a video
+      parameters:
+        - name: videoId
+          in: path
+          description: The id of the video
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/x-roles"
+        - $ref: "#/components/parameters/x-userId"
+      responses:
+        "200":
+          $ref: "#/components/responses/attachmentsResponse"
   /attachments/{id}:
     get:
       tags:

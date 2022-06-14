@@ -7,8 +7,8 @@ export class CreateAttachmentDto {
   type: AttachmentType;
 
   @IsString()
-  @IsOptional()
-  title?: string;
+  @IsNotEmpty()
+  title: string;
 
   @IsString()
   @IsOptional()

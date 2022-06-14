@@ -164,9 +164,13 @@ export class AttachmentController {
     @Payload("value") message: PolyflixKafkaTypedValue<Element>
   ) {
     this.logger.log(
-      `Recieve message from topic: polyflix.legacy.video - trigger: ${message.trigger}`
+      `Recieve message from topic: ${AttachmentController.KAFKA_VIDEO_TOPIC} - trigger: ${message.trigger}`
     );
-    this.handleElementUpdate(ElementType.VIDEOS, message);
+    try {
+      await this.handleElementUpdate(ElementType.VIDEOS, message);
+    } catch (e) {
+      this.logger.error(`Could not handle VideoEvent : ${e}`);
+    }
   }
 
   /**
@@ -177,7 +181,14 @@ export class AttachmentController {
   async subscribeToModule(
     @Payload("value") message: PolyflixKafkaTypedValue<Element>
   ) {
-    this.handleElementUpdate(ElementType.MODULES, message);
+    try {
+      this.logger.log(
+        `Recieve message from topic: ${AttachmentController.KAFKA_MODULE_TOPIC} - trigger: ${message.trigger}`
+      );
+      await this.handleElementUpdate(ElementType.MODULES, message);
+    } catch (e) {
+      this.logger.error(`Could not handle ModuleEvent : ${e}`);
+    }
   }
 
   private async handleElementUpdate(
@@ -189,13 +200,17 @@ export class AttachmentController {
         /* If an element is created and contains attachments,
         we add the element in each attachment */
         for (const id of message.payload.attachments) {
-          const attachment = await this.attachmentService.findOne(id);
-          await this.attachmentService.handleElementUpdate(
-            attachment,
-            elementType,
-            message.trigger,
-            message.payload.id
-          );
+          try {
+            const attachment = await this.attachmentService.findOne(id);
+            await this.attachmentService.handleElementUpdate(
+              attachment,
+              elementType,
+              message.trigger,
+              message.payload.id
+            );
+          } catch (e) {
+            this.logger.warn(e, AttachmentController.name);
+          }
         }
         break;
       case TriggerType.UPDATE:
@@ -212,26 +227,34 @@ export class AttachmentController {
           oldAttachments
         );
         for (const id of elementsToAdd) {
-          const attachment = await this.attachmentService.findOne(id);
-          await this.attachmentService.handleElementUpdate(
-            attachment,
-            elementType,
-            TriggerType.CREATE,
-            message.payload.id
-          );
+          try {
+            const attachment = await this.attachmentService.findOne(id);
+            await this.attachmentService.handleElementUpdate(
+              attachment,
+              elementType,
+              TriggerType.CREATE,
+              message.payload.id
+            );
+          } catch (e) {
+            this.logger.warn(e, AttachmentController.name);
+          }
         }
         const elementsToDelete = difference(
           oldAttachments,
           message.payload.attachments
         );
         for (const id of elementsToDelete) {
-          const attachment = await this.attachmentService.findOne(id);
-          await this.attachmentService.handleElementUpdate(
-            attachment,
-            elementType,
-            TriggerType.DELETE,
-            message.payload.id
-          );
+          try {
+            const attachment = await this.attachmentService.findOne(id);
+            await this.attachmentService.handleElementUpdate(
+              attachment,
+              elementType,
+              TriggerType.DELETE,
+              message.payload.id
+            );
+          } catch (e) {
+            this.logger.warn(e, AttachmentController.name);
+          }
         }
         break;
       case TriggerType.DELETE:
