@@ -1,18 +1,19 @@
 import { Type } from "class-transformer";
-import { IsInt, IsOptional, IsString, IsUUID, Min } from "class-validator";
+import { IsInt, IsOptional, IsString, IsUUID, Max, Min } from "class-validator";
 
 export class AttachmentParams {
-  @IsInt()
-  @Min(0)
-  @IsOptional()
-  @Type(() => Number)
-  offset?: number;
-
   @IsInt()
   @Min(1)
   @IsOptional()
   @Type(() => Number)
-  limit?: number;
+  page?: number = 1;
+
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  @IsOptional()
+  @Type(() => Number)
+  pageSize?: number = 10;
 
   @IsUUID(4)
   @IsOptional()

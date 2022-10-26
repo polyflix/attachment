@@ -140,17 +140,17 @@ components:
     notFoundError:
       description: Either the attachment was not found, or the attachment status is still `IN_PROGRESS`.
   parameters:
-    limit:
-      name: limit
+    pageSize:
+      name: pageSize
       in: query
-      description: The maximum number of attachments to return
+      description: The maximum number of attachments to return by page (default is 10)
       required: false
       schema:
         type: number
-    offset:
-      name: offset
+    page:
+      name: page
       in: query
-      description: The number of attachments to skip
+      description: The page number of attachments to return (default is 1)
       required: false
       schema:
         type: number
@@ -211,8 +211,8 @@ paths:
         - Attachments
       summary: Get a list of paginated attachments, only for contributors and administrators
       parameters:
-        - $ref: "#/components/parameters/limit"
-        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/pageSize"
+        - $ref: "#/components/parameters/page"
         - $ref: "#/components/parameters/userId"
         - $ref: "#/components/parameters/videos"
         - $ref: "#/components/parameters/modules"

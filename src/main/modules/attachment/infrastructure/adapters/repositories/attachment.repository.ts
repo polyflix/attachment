@@ -35,7 +35,7 @@ export class AttachmentRepository {
 
   async findAll(params: AttachmentParams): Promise<PaginatedAttachments> {
     this.logger.log(
-      `Retrieving attachments list of user ${params.userId} with limit of ${params.limit} and offset of ${params.offset} (videos : ${params.videos}, modules : ${params.modules}).`
+      `Retrieving attachments list of user ${params.userId} with page number ${params.page} and pageSize of ${params.pageSize} (videos : ${params.videos}, modules : ${params.modules}).`
     );
     const query = {
       ...(params.userId && { userId: params.userId }),
@@ -46,8 +46,8 @@ export class AttachmentRepository {
     const attachments = await this.attachmentModel
       .find(query)
       .sort({ updatedAt: -1 })
-      .limit(params.limit || 20)
-      .skip(params.offset || 0)
+      .limit(params.pageSize)
+      .skip((params.page - 1) * params.pageSize)
       .exec();
     return {
       items: this.attachmentEntityMapper.entitiesToApis(attachments),

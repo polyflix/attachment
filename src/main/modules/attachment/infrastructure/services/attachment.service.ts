@@ -56,9 +56,11 @@ export class AttachmentService {
   }
 
   async find(params: AttachmentParams): Promise<PaginatedAttachmentsResponse> {
-    const paginatedAttachments = await this.attachmentRepository.findAll(
-      params
-    );
+    const paginatedAttachments = await this.attachmentRepository.findAll({
+      page: params.page || 1,
+      pageSize: params.pageSize || 10,
+      ...params
+    });
     return PaginatedAttachmentsResponse.of({
       totalCount: paginatedAttachments.totalCount,
       items: await Promise.all(
