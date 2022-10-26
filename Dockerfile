@@ -3,7 +3,7 @@ FROM node:16-bullseye-slim
 ARG GITLAB_REGISTRY_TOKEN=oPzeRwQ2XxoMnDm67NCe
 
 RUN apt-get update --no-install-recommends && \
-    apt-get install -y --no-install-recommends  curl=7.74.0-1.3+deb11u1 && \
+    apt-get install -y --no-install-recommends  curl=7.74.0-1.3+deb11u3 && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /home/node
