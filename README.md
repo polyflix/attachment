@@ -10,7 +10,7 @@ npm run start:dev
 ```
 
 You should have the appropriate configuration and services running on your machine
-in order to ensure the application is launching properly (cf. the [bootstrap repository](https://gitlab.polytech.umontpellier.fr/polyflix-do/bootstrap)).
+in order to ensure the application is launching properly (cf. the [devkit repository](https://github.com/polyflix/devkit)).
 
 ## OpenAPI specification
 
